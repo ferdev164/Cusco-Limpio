@@ -1,14 +1,24 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+
 function App() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white">
-      <h1 className="text-4xl font-extrabold text-emerald-400 mb-2">
-        ¡Vite + React + Tailwind v4 Listos!
-      </h1>
-      <p className="text-slate-400 text-lg">
-        El entorno del Frontend en <span className="text-emerald-500 font-semibold">Cusco-Limpio</span> se ha configurado con éxito.
-      </p>
-    </div>
-  )
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/ciudadano/dashboard" element={<Dashboard />} />
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/conductor/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

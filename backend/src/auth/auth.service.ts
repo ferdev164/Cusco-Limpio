@@ -28,6 +28,9 @@ export class AuthService {
     });
 
     if (!usuario) throw new UnauthorizedException('Credenciales incorrectas');
+    if (usuario.rol !== dto.rol) {
+      throw new UnauthorizedException('El tipo de usuario seleccionado no coincide');
+    }
 
     const passwordValida = await bcrypt.compare(dto.contrasena, usuario.contrasena);
     if (!passwordValida) throw new UnauthorizedException('Credenciales incorrectas');
@@ -61,8 +64,7 @@ export class AuthService {
     await this.usuarioRepo.save(usuario);
 
     if (usuario.rol === Rol.CIUDADANO) {
-      console.log('LATITUD RECIBIDA:', dto.latitud);
-      console.log('LONGITUD RECIBIDA:', dto.longitud);
+      
       const ciudadano = this.ciudadanoRepo.create({
         usuario,
         latitud: dto.latitud ? Number(dto.latitud) : null,

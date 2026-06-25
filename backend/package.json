@@ -8,6 +8,8 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "seed:admin": "ts-node --prefer-ts-exts -r tsconfig-paths/register src/seeds/seed-admin.ts",
+    "seed:system": "ts-node --prefer-ts-exts -r tsconfig-paths/register src/seeds/seed-system.ts",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",

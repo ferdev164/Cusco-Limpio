@@ -4,16 +4,20 @@ const API = axios.create({
   baseURL: 'http://localhost:3000',
 });
 
+export type RolUsuario = 'administrador' | 'ciudadano' | 'conductor';
+export type RolLogin = Extract<RolUsuario, 'administrador' | 'ciudadano'>;
+
 export interface LoginData {
   correo: string;
   contrasena: string;
+  rol: RolLogin;
 }
 
 export interface Usuario {
   id: number;
   nombre: string;
   correo: string;
-  rol: string;
+  rol: RolUsuario;
 }
 
 export interface AuthResponse {

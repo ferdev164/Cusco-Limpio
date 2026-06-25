@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 const recursos = [
   { to: '/admin/dashboard', label: 'Resumen' },
   { to: '/admin/operaciones', label: 'Operaciones' },
+  { to: '/admin/monitoreo', label: 'Monitoreo GPS' },
 ];
 
 export default function Sidebar() {

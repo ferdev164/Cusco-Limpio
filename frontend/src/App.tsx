@@ -10,6 +10,7 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import type { RolUsuario } from './services/auth.service';
+import PantallaGps from './features/monitoreo-gps/PantallaGps';
 
 const destinosPorRol: Record<RolUsuario, string> = {
   administrador: '/admin/dashboard',
@@ -59,12 +60,14 @@ function App() {
             element={
               <RutaPorRol rol="administrador">
                 <AdminLayout />
+
               </RutaPorRol>
             }
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="operaciones" element={<AdminOperaciones />} />
+            <Route path="monitoreo" element={<PantallaGps />} />
             <Route path="zonas" element={<Navigate to="/admin/operaciones" replace />} />
             <Route path="horarios" element={<Navigate to="/admin/operaciones" replace />} />
             <Route path="vehiculos" element={<Navigate to="/admin/operaciones" replace />} />

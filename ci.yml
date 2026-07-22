@@ -1,36 +1,65 @@
 name: CI - Integración Continua
 
-# Evento que dispara el workflow: cada push a la rama main
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-and-test:
-    name: Compilar y ejecutar pruebas
+  backend:
+    name: Backend - Instalar y probar
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
 
     steps:
-      # 1. Descargar el código fuente del repositorio
       - name: Descargar código fuente
         uses: actions/checkout@v4
 
-      # 2. Instalar Node.js
       - name: Instalar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
-      # 3. Instalar dependencias
       - name: Instalar dependencias
         run: npm install
 
-      # 4. Ejecutar las pruebas unitarias
       - name: Ejecutar pruebas
         run: npm test
 
-      # 5. Mostrar el resultado de la ejecución
       - name: Resultado de la ejecución
         if: always()
-        run: echo "Workflow finalizado con estado ${{ job.status }}"
+        run: echo "Backend finalizado con estado ${{ job.status }}"
+
+  frontend:
+    name: Frontend - Instalar, lint y build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Descargar código fuente
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Ejecutar lint
+        run: npm run lint
+
+      - name: Compilar (build)
+        run: npm run build
+
+      - name: Resultado de la ejecución
+        if: always()
+        run: echo "Frontend finalizado con estado ${{ job.status }}"

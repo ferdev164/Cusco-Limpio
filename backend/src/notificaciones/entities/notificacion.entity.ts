@@ -1,3 +1,5 @@
+// Tabla de auditoría en PostgreSQL
+
 import {
   Entity,
   PrimaryGeneratedColumn,

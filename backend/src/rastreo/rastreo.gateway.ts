@@ -1,3 +1,5 @@
+// Puerta WebSocket: recibe/emite posiciones en tiempo real
+
 import {
   WebSocketGateway,
   WebSocketServer,

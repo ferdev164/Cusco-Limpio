@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { login } from '../services/auth.service';
-import type { RolLogin } from '../services/auth.service';
+
+// Solo cambia el titulo/subtitulo y el texto del boton. El backend identifica
+// el rol real (administrador o conductor) por el correo y redirige segun RBAC.
+type VistaLogin = 'ciudadano' | 'administrador';
 
 const destinosPorRol: Record<string, string> = {
   administrador: '/admin/dashboard',
@@ -11,7 +14,7 @@ const destinosPorRol: Record<string, string> = {
 };
 
 export default function Login() {
-  const [rol, setRol] = useState<RolLogin>('ciudadano');
+  const [rol, setRol] = useState<VistaLogin>('ciudadano');
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState('');
@@ -25,11 +28,11 @@ export default function Login() {
     setCargando(true);
 
     try {
-      const res = await login({ correo, contrasena, rol });
+      const res = await login({ correo, contrasena });
       guardarSesion(res.access_token, res.usuario);
       navigate(destinosPorRol[res.usuario.rol] || '/');
     } catch (err: unknown) {
-      setError('Correo, contrasena o tipo de usuario incorrectos');
+      setError('Correo o contrasena incorrectos');
     } finally {
       setCargando(false);
     }

@@ -1,3 +1,5 @@
+// Hook que escucha "camionMovido" y guarda posiciones
+
 import { useEffect, useState } from 'react';
 import { socket } from '../api/socket';
 

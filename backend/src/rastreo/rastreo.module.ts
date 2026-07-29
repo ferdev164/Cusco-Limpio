@@ -9,7 +9,7 @@ import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Ciudadano]),
-    NotificacionesModule, // <-- nuevo
+    NotificacionesModule, 
   ],
   providers: [RastreoGateway, SimuladorService, RastreoService],
 })

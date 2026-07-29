@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -28,13 +29,14 @@ export class AuthService {
     });
 
     if (!usuario) throw new UnauthorizedException('Credenciales incorrectas');
-    if (usuario.rol !== dto.rol) {
-      throw new UnauthorizedException('El tipo de usuario seleccionado no coincide');
-    }
 
     const passwordValida = await bcrypt.compare(dto.contrasena, usuario.contrasena);
     if (!passwordValida) throw new UnauthorizedException('Credenciales incorrectas');
-
+    
+    // después de verificar la contraseña, agrega:
+    if (!usuario.activo) {
+      throw new UnauthorizedException('Cuenta desactivada');
+    }
     return {
       access_token: this.generarToken(usuario),
       usuario: {
@@ -47,6 +49,10 @@ export class AuthService {
   }
 
   async registrar(dto: RegisterDto) {
+    // al inicio del método registrar():
+    if (!dto.nombre || dto.nombre.trim() === '') {
+      throw new BadRequestException('El nombre es obligatorio');
+    }
     const existe = await this.usuarioRepo.findOne({
       where: { correo: dto.correo },
     });

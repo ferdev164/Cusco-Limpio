@@ -2,13 +2,19 @@ import { useState } from 'react';
 import AsignarHorario from './AsignarHorario';
 import AsignarVehiculo from './AsignarVehiculo';
 import AsignarZona from './AsignarZona';
+import GestionRecojos from './GestionRecojos';
 
-type OperacionTab = 'turnos' | 'vehiculos' | 'zonas';
+import GestionRutas from './GestionRutas';
+import GestionHorarios from './GestionHorarios';
+
+type OperacionTab = 'turnos' | 'vehiculos' | 'zonas' | 'recojos';
+
 
 const tabs: { id: OperacionTab; label: string }[] = [
   { id: 'turnos', label: 'Turnos y personal' },
   { id: 'vehiculos', label: 'Vehiculos' },
   { id: 'zonas', label: 'Zonas y rutas' },
+  { id: 'recojos', label: 'Recojos' },
 ];
 
 export default function AdminOperaciones() {
@@ -47,6 +53,7 @@ export default function AdminOperaciones() {
       {tabActiva === 'turnos' && <AsignarHorario />}
       {tabActiva === 'vehiculos' && <AsignarVehiculo />}
       {tabActiva === 'zonas' && <AsignarZona />}
+      {tabActiva === 'recojos' && <GestionRecojos />}
     </div>
   );
 }

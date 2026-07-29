@@ -1,5 +1,17 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { AsignarVehiculoDto } from '../dto/asignar-vehiculo.dto';
+import { CrearVehiculoDto } from '../dto/crear-vehiculo.dto';
+import { ActualizarVehiculoDto } from '../dto/actualizar-vehiculo.dto';
 import { EstadoVehiculo } from '../entities/vehiculo.entity';
 import { VehiculosService } from './vehiculos.service';
 
@@ -10,6 +22,24 @@ export class VehiculosController {
   @Get()
   findAll(@Query('estado') estado?: EstadoVehiculo) {
     return this.vehiculosService.findAll(estado);
+  }
+
+  @Post()
+  crear(@Body() dto: CrearVehiculoDto) {
+    return this.vehiculosService.crear(dto);
+  }
+
+  @Patch(':id')
+  actualizar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ActualizarVehiculoDto,
+  ) {
+    return this.vehiculosService.actualizar(id, dto);
+  }
+
+  @Delete(':id')
+  eliminar(@Param('id', ParseIntPipe) id: number) {
+    return this.vehiculosService.eliminar(id);
   }
 
   @Post(':id/asignar')

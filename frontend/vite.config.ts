@@ -8,4 +8,9 @@ export default defineConfig({
     react(),
     tailwindcss(), // <-- Déjalo así, vacío por dentro
   ],
+  server: {
+    host: true,        // escucha en todas las interfaces
+    port: 5173,
+    allowedHosts: ['cusco.limpio'],
+  },
 })

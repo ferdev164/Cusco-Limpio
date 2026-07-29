@@ -4,6 +4,7 @@ import AdminLayout from './components/AdminLayout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminOperaciones from './pages/AdminOperaciones';
+import ConductorDashboard from './pages/ConductorDashboard';
 import Dashboard from './pages/Dashboard';
 import HorariosPublicos from './pages/HorariosPublicos';
 import Landing from './pages/Landing';
@@ -11,6 +12,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import type { RolUsuario } from './services/auth.service';
 import PantallaGps from './features/monitoreo-gps/PantallaGps';
+import ActivarNotificaciones from './pages/ActivarNotificaciones';
+import Reportes from './pages/Reportes';
 
 const destinosPorRol: Record<RolUsuario, string> = {
   administrador: '/admin/dashboard',
@@ -47,6 +50,8 @@ function App() {
           <Route path="/ciudadano" element={<HorariosPublicos />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/activar-notificaciones" element={<ActivarNotificaciones />} />  {/* ← nueva */}
           <Route
             path="/ciudadano/dashboard"
             element={
@@ -68,6 +73,7 @@ function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="operaciones" element={<AdminOperaciones />} />
             <Route path="monitoreo" element={<PantallaGps />} />
+            <Route path="reportes" element={<Reportes />} />
             <Route path="zonas" element={<Navigate to="/admin/operaciones" replace />} />
             <Route path="horarios" element={<Navigate to="/admin/operaciones" replace />} />
             <Route path="vehiculos" element={<Navigate to="/admin/operaciones" replace />} />
@@ -76,7 +82,7 @@ function App() {
             path="/conductor/dashboard"
             element={
               <RutaPorRol rol="conductor">
-                <Dashboard />
+                <ConductorDashboard />
               </RutaPorRol>
             }
           />

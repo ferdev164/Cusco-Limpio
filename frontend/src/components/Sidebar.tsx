@@ -4,6 +4,7 @@ const recursos = [
   { to: '/admin/dashboard', label: 'Resumen' },
   { to: '/admin/operaciones', label: 'Operaciones' },
   { to: '/admin/monitoreo', label: 'Monitoreo GPS' },
+  { to: '/admin/reportes', label: 'Reportes' },
 ];
 
 export default function Sidebar() {

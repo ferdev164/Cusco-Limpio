@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { operacionesApi } from '../services/operaciones.service';
 import type {
+  ConductorCuenta,
   Horario,
+  HorarioAdmin,
+  HorarioInput,
   PersonaOperativa,
   Programacion,
   Vehiculo,
@@ -69,9 +72,41 @@ export default function AsignarHorario() {
   const [ayudanteIds, setAyudanteIds] = useState<number[]>([]);
   const [programaciones, setProgramaciones] = useState<Programacion[]>([]);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
-  const [tab, setTab] = useState<'crear' | 'ver'>('crear');
+  const [tab, setTab] = useState<'crear' | 'ver' | 'gestionar' | 'cuentas'>('crear');
   const [mensaje, setMensaje] = useState('');
   const [guardando, setGuardando] = useState(false);
+
+  // Cuentas de conductor (asociar login a un perfil ya existente)
+  const [cuentas, setCuentas] = useState<ConductorCuenta[]>([]);
+  const [modalCuenta, setModalCuenta] = useState<ConductorCuenta | null>(null);
+  const [formCuenta, setFormCuenta] = useState({
+    correo: '',
+    contrasena: '',
+    telefono: '',
+  });
+  const [guardandoCuenta, setGuardandoCuenta] = useState(false);
+
+  // CRUD de horarios (HU-11)
+  const [todosHorarios, setTodosHorarios] = useState<HorarioAdmin[]>([]);
+  const [modalHorario, setModalHorario] = useState(false);
+  const [editandoHorarioId, setEditandoHorarioId] = useState<number | null>(null);
+  const [formHorario, setFormHorario] = useState<HorarioInput>({
+    zonaId: 0,
+    turno: '',
+    horaInicio: '',
+    horaFin: '',
+    dias: '',
+  });
+  const [guardandoHorario, setGuardandoHorario] = useState(false);
+  const [confirmarHorario, setConfirmarHorario] = useState<HorarioAdmin | null>(null);
+
+  async function cargarTodosHorarios() {
+    setTodosHorarios(await operacionesApi.horariosTodos());
+  }
+
+  async function cargarCuentas() {
+    setCuentas(await operacionesApi.conductoresCuentas());
+  }
 
   useEffect(() => {
     async function cargarBase() {
@@ -100,6 +135,12 @@ export default function AsignarHorario() {
     }
 
     void cargarBase();
+    void cargarTodosHorarios().catch((err) =>
+      setMensaje(err instanceof Error ? err.message : 'No se pudo cargar'),
+    );
+    void cargarCuentas().catch((err) =>
+      setMensaje(err instanceof Error ? err.message : 'No se pudo cargar'),
+    );
   }, []);
 
   useEffect(() => {
@@ -214,6 +255,98 @@ export default function AsignarHorario() {
     }
   }
 
+  // ── CRUD de horarios ──
+  function abrirCrearHorario() {
+    setEditandoHorarioId(null);
+    setFormHorario({
+      zonaId: zonas[0]?.id ?? 0,
+      turno: '',
+      horaInicio: '',
+      horaFin: '',
+      dias: '',
+    });
+    setModalHorario(true);
+  }
+
+  function abrirEditarHorario(h: HorarioAdmin) {
+    setEditandoHorarioId(h.id);
+    setFormHorario({
+      zonaId: zonas.find((z) => z.nombre === h.zona)?.id ?? 0,
+      turno: h.turno,
+      horaInicio: h.hora_inicio?.slice(0, 5) ?? '',
+      horaFin: h.hora_fin?.slice(0, 5) ?? '',
+      dias: h.dias,
+    });
+    setModalHorario(true);
+  }
+
+  async function guardarHorario() {
+    setGuardandoHorario(true);
+    setMensaje('');
+    try {
+      if (editandoHorarioId) {
+        await operacionesApi.actualizarHorario(editandoHorarioId, formHorario);
+        setMensaje('Horario actualizado correctamente.');
+      } else {
+        await operacionesApi.crearHorario(formHorario);
+        setMensaje('Horario creado correctamente.');
+      }
+      setModalHorario(false);
+      await cargarTodosHorarios();
+    } catch (err) {
+      setMensaje(err instanceof Error ? err.message : 'No se pudo guardar');
+    } finally {
+      setGuardandoHorario(false);
+    }
+  }
+
+  // ── Cuentas de conductor ──
+  function abrirCrearCuenta(conductor: ConductorCuenta) {
+    setFormCuenta({ correo: '', contrasena: '', telefono: '' });
+    setModalCuenta(conductor);
+  }
+
+  async function guardarCuenta() {
+    if (!modalCuenta) return;
+    if (!formCuenta.correo || formCuenta.contrasena.length < 6) {
+      setMensaje('Ingresa un correo valido y una contrasena de al menos 6 caracteres.');
+      return;
+    }
+
+    setGuardandoCuenta(true);
+    setMensaje('');
+    try {
+      const actualizado = await operacionesApi.crearCuentaConductor(modalCuenta.id, {
+        correo: formCuenta.correo,
+        contrasena: formCuenta.contrasena,
+        telefono: formCuenta.telefono || undefined,
+      });
+      setCuentas((actuales) =>
+        actuales.map((c) => (c.id === actualizado.id ? actualizado : c)),
+      );
+      setModalCuenta(null);
+      setMensaje(`Cuenta creada para ${actualizado.nombre}.`);
+    } catch (err) {
+      setMensaje(err instanceof Error ? err.message : 'No se pudo crear la cuenta');
+    } finally {
+      setGuardandoCuenta(false);
+    }
+  }
+
+  async function eliminarHorario() {
+    if (!confirmarHorario) return;
+    setMensaje('');
+    try {
+      await operacionesApi.eliminarHorario(confirmarHorario.id);
+      setMensaje('Horario eliminado correctamente.');
+      setConfirmarHorario(null);
+      await cargarTodosHorarios();
+    } catch (err) {
+      setMensaje(err instanceof Error ? err.message : 'No se pudo eliminar');
+      setConfirmarHorario(null);
+    }
+  }
+
   return (
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
@@ -223,13 +356,22 @@ export default function AsignarHorario() {
             Programa turnos, conductores y ayudantes por zona.
           </p>
         </div>
-        <button
-          onClick={guardarTurno}
-          disabled={tab !== 'crear' || guardando}
-          className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
-        >
-          {guardando ? 'Guardando...' : 'Agregar turno'}
-        </button>
+        {tab === 'gestionar' ? (
+          <button
+            onClick={abrirCrearHorario}
+            className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+          >
+            + Nuevo horario
+          </button>
+        ) : tab === 'cuentas' ? null : (
+          <button
+            onClick={guardarTurno}
+            disabled={tab !== 'crear' || guardando}
+            className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+          >
+            {guardando ? 'Guardando...' : 'Agregar turno'}
+          </button>
+        )}
       </div>
 
       {mensaje && (
@@ -251,7 +393,7 @@ export default function AsignarHorario() {
       </div>
 
       <div className="mb-6 inline-flex rounded-lg border border-slate-200 bg-white p-1">
-        {(['crear', 'ver'] as const).map((item) => (
+        {(['crear', 'ver', 'gestionar', 'cuentas'] as const).map((item) => (
           <button
             key={item}
             onClick={() => setTab(item)}
@@ -259,12 +401,18 @@ export default function AsignarHorario() {
               tab === item ? 'bg-emerald-700 text-white' : 'text-slate-600'
             }`}
           >
-            {item === 'crear' ? 'Crear horario' : 'Ver horarios'}
+            {item === 'crear'
+              ? 'Crear turno'
+              : item === 'ver'
+                ? 'Ver programaciones'
+                : item === 'gestionar'
+                  ? 'Gestionar horarios'
+                  : 'Cuentas de conductor'}
           </button>
         ))}
       </div>
 
-      {tab === 'crear' ? (
+      {tab === 'crear' && (
         <div className="grid grid-cols-2 gap-6">
           <section className="rounded-lg border border-slate-200 bg-white p-5">
             <h3 className="mb-3 text-sm font-semibold">Zona y horario</h3>
@@ -358,7 +506,9 @@ export default function AsignarHorario() {
             </div>
           </section>
         </div>
-      ) : (
+      )}
+
+      {tab === 'ver' && (
         <section className="rounded-lg border border-slate-200 bg-white p-5">
           <h3 className="mb-4 text-sm font-semibold">
             Programaciones registradas
@@ -393,6 +543,301 @@ export default function AsignarHorario() {
             ))}
           </div>
         </section>
+      )}
+
+      {tab === 'gestionar' && (
+        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th className="px-4 py-3 font-medium">Zona</th>
+                <th className="px-4 py-3 font-medium">Turno</th>
+                <th className="px-4 py-3 font-medium">Horario</th>
+                <th className="px-4 py-3 font-medium">Días</th>
+                <th className="px-4 py-3 text-right font-medium">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {todosHorarios.map((h) => (
+                <tr key={h.id} className="hover:bg-slate-50">
+                  <td className="px-4 py-3 font-semibold">{h.zona || '—'}</td>
+                  <td className="px-4 py-3 text-slate-600">{h.turno}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {h.hora_inicio?.slice(0, 5)} - {h.hora_fin?.slice(0, 5)}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">{h.dias}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => abrirEditarHorario(h)}
+                      className="mr-2 rounded-md border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => setConfirmarHorario(h)}
+                      className="rounded-md border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {todosHorarios.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
+                    No hay horarios registrados.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {tab === 'cuentas' && (
+        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <div className="border-b border-slate-100 px-4 py-3">
+            <p className="text-sm text-slate-500">
+              Crea el correo y la contrasena de acceso para un conductor ya
+              registrado. No se crean conductores nuevos aqui, solo se les da
+              una cuenta para iniciar sesion.
+            </p>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th className="px-4 py-3 font-medium">Conductor</th>
+                <th className="px-4 py-3 font-medium">Licencia</th>
+                <th className="px-4 py-3 font-medium">Cuenta</th>
+                <th className="px-4 py-3 text-right font-medium">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {cuentas.map((conductor) => (
+                <tr key={conductor.id} className="hover:bg-slate-50">
+                  <td className="px-4 py-3 font-semibold">{conductor.nombre}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {conductor.licencia || '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    {conductor.tieneCuenta ? (
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                        {conductor.correo}
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+                        Sin cuenta
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {!conductor.tieneCuenta && (
+                      <button
+                        onClick={() => abrirCrearCuenta(conductor)}
+                        className="rounded-md border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+                      >
+                        Crear cuenta
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {cuentas.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400">
+                    No hay conductores registrados.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {/* ── MODAL crear cuenta de conductor ── */}
+      {modalCuenta && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="mb-1 text-lg font-bold">Crear cuenta</h3>
+            <p className="mb-4 text-sm text-slate-500">
+              Para <span className="font-semibold">{modalCuenta.nombre}</span>
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-sm text-slate-600">Correo</label>
+                <input
+                  type="email"
+                  value={formCuenta.correo}
+                  onChange={(e) =>
+                    setFormCuenta({ ...formCuenta, correo: e.target.value })
+                  }
+                  placeholder="conductor@cuscolimpio.com"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-slate-600">
+                  Contrasena
+                </label>
+                <input
+                  type="password"
+                  value={formCuenta.contrasena}
+                  onChange={(e) =>
+                    setFormCuenta({ ...formCuenta, contrasena: e.target.value })
+                  }
+                  placeholder="Minimo 6 caracteres"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-slate-600">
+                  Telefono (opcional)
+                </label>
+                <input
+                  value={formCuenta.telefono}
+                  onChange={(e) =>
+                    setFormCuenta({ ...formCuenta, telefono: e.target.value })
+                  }
+                  placeholder="987654321"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setModalCuenta(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={guardarCuenta}
+                disabled={guardandoCuenta}
+                className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50"
+              >
+                {guardandoCuenta ? 'Creando...' : 'Crear cuenta'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL crear/editar horario ── */}
+      {modalHorario && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="mb-4 text-lg font-bold">
+              {editandoHorarioId ? 'Editar horario' : 'Nuevo horario'}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-sm text-slate-600">Zona</label>
+                <select
+                  value={formHorario.zonaId}
+                  onChange={(e) =>
+                    setFormHorario({ ...formHorario, zonaId: Number(e.target.value) })
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {zonas.map((z) => (
+                    <option key={z.id} value={z.id}>
+                      {z.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-slate-600">Turno</label>
+                <input
+                  value={formHorario.turno}
+                  onChange={(e) =>
+                    setFormHorario({ ...formHorario, turno: e.target.value })
+                  }
+                  placeholder="Mañana"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-sm text-slate-600">Hora inicio</label>
+                  <input
+                    type="time"
+                    value={formHorario.horaInicio}
+                    onChange={(e) =>
+                      setFormHorario({ ...formHorario, horaInicio: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-slate-600">Hora fin</label>
+                  <input
+                    type="time"
+                    value={formHorario.horaFin}
+                    onChange={(e) =>
+                      setFormHorario({ ...formHorario, horaFin: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-slate-600">Días</label>
+                <input
+                  value={formHorario.dias}
+                  onChange={(e) =>
+                    setFormHorario({ ...formHorario, dias: e.target.value })
+                  }
+                  placeholder="Lunes,Miércoles,Viernes"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setModalHorario(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={guardarHorario}
+                disabled={guardandoHorario}
+                className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50"
+              >
+                {guardandoHorario ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL confirmar borrado ── */}
+      {confirmarHorario && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-bold">¿Eliminar horario?</h3>
+            <p className="mb-6 text-sm text-slate-500">
+              Estás por eliminar el turno{' '}
+              <span className="font-semibold">{confirmarHorario.turno}</span> de{' '}
+              {confirmarHorario.zona}. Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmarHorario(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={eliminarHorario}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Sí, eliminar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

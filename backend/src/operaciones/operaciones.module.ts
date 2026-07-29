@@ -3,6 +3,7 @@ import { AyudantesModule } from './ayudantes/ayudantes.module';
 import { ConductoresModule } from './conductores/conductores.module';
 import { HorariosModule } from './horarios/horarios.module';
 import { ProgramacionesModule } from './programaciones/programaciones.module';
+import { RecojosModule } from './recojos/recojos.module';
 import { RutasModule } from './rutas/rutas.module';
 import { VehiculosModule } from './vehiculos/vehiculos.module';
 import { ZonasModule } from './zonas/zonas.module';
@@ -16,6 +17,7 @@ import { ZonasModule } from './zonas/zonas.module';
     VehiculosModule,
     ProgramacionesModule,
     RutasModule,
+    RecojosModule,
   ],
 })
 export class OperacionesModule {}

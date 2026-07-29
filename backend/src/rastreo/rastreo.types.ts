@@ -1,3 +1,4 @@
+  // Interfaz PosicionCamion (camionId, lat, lng, recorridoId)
 export interface PosicionCamion {
   camionId: number;
   lat: number;

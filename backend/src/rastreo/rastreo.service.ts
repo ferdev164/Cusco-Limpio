@@ -1,3 +1,5 @@
+// Cálculo de distancia Haversine + anti-duplicados
+
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull } from 'typeorm';
@@ -19,7 +21,7 @@ export class RastreoService {
   constructor(
     @InjectRepository(Ciudadano)
     private readonly ciudadanoRepo: Repository<Ciudadano>,
-    private readonly notificaciones: NotificacionesService, // <-- nuevo
+    private readonly notificaciones: NotificacionesService, 
   ) {}
 
   async revisarProximidad(pos: PosicionCamion) {

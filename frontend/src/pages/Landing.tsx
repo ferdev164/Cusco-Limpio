@@ -35,15 +35,15 @@ export default function Landing() {
       </header>
 
       <section
-        className="relative flex min-h-[520px] items-center justify-center px-6"
+        className="relative flex min-h-screen items-center justify-center px-6"
         style={{
           backgroundImage: `url(${heroBg})`,
-          backgroundPosition: 'center',
+          backgroundPosition: 'center top',
           backgroundSize: 'cover',
         }}
       >
         <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 mx-auto max-w-2xl py-24 text-center">
+        <div className="relative z-10 mx-auto max-w-2xl py-24 text-center ">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1a7a5e] text-lg font-bold text-white">
             CL
           </div>

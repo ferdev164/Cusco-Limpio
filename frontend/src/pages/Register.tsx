@@ -54,7 +54,7 @@ export default function Register() {
         latitud: ubicacion.lat,
         longitud: ubicacion.lng,
       });
-      navigate('/login');
+      navigate('/activar-notificaciones');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al registrarse');
     } finally {

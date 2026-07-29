@@ -5,12 +5,10 @@ const API = axios.create({
 });
 
 export type RolUsuario = 'administrador' | 'ciudadano' | 'conductor';
-export type RolLogin = Extract<RolUsuario, 'administrador' | 'ciudadano'>;
 
 export interface LoginData {
   correo: string;
   contrasena: string;
-  rol: RolLogin;
 }
 
 export interface Usuario {

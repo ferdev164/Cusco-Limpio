@@ -1,3 +1,5 @@
+// Camión simulado que recorre el centro de Cusco
+
 import {
   Injectable,
   OnModuleInit,

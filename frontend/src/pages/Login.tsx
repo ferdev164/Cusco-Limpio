@@ -15,6 +15,7 @@ const destinosPorRol: Record<string, string> = {
 export default function Login() {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
   const { guardarSesion } = useAuth();
@@ -109,14 +110,55 @@ export default function Login() {
             <label className="mb-1 block text-sm text-gray-600">
               Contrasena
             </label>
-            <input
-              type="password"
-              placeholder="********"
-              value={contrasena}
-              onChange={(e) => setContrasena(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
+            <div className="relative">
+              <input
+                type={mostrarContrasena ? 'text' : 'password'}
+                placeholder="********"
+                value={contrasena}
+                onChange={(e) => setContrasena(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarContrasena((prev) => !prev)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 transition hover:text-gray-700"
+                aria-label={mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              >
+                {mostrarContrasena ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.8}
+                      d="M3.98 8.223A10.477 10.477 0 001.5 12c1.573 3.5 4.7 6.5 8.5 7.5a10.477 10.477 0 008.52-4.223M9.88 9.88a3 3 0 104.24 4.24M6.61 6.61A10.477 10.477 0 0112 4.5c3.8 1 6.93 4 8.5 7.5a10.48 10.48 0 01-2.38 3.63M3 3l18 18"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.8}
+                      d="M2.25 12s3.5-6.75 9.75-6.75S21.75 12 21.75 12s-3.5 6.75-9.75 6.75S2.25 12 2.25 12z"
+                    />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           {error && <p className="text-center text-sm text-red-500">{error}</p>}

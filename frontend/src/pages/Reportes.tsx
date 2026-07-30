@@ -63,7 +63,7 @@ function GraficoSimple({
           <YAxis tick={EJE_ESTILO} axisLine={false} tickLine={false} width={36} />
           <Tooltip
             {...TOOLTIP_ESTILO}
-            formatter={(valor: number) => [`${valor}${sufijo}`, titulo]}
+            formatter={(valor) => [`${valor}${sufijo}`, titulo]}
           />
           <Bar dataKey="valor" fill={color} radius={[4, 4, 0, 0]} maxBarSize={48} />
         </BarChart>
@@ -89,7 +89,7 @@ function GraficoVolumen({ data }: { data: ReporteZona[] }) {
           <YAxis tick={EJE_ESTILO} axisLine={false} tickLine={false} width={36} />
           <Tooltip
             {...TOOLTIP_ESTILO}
-            formatter={(valor: number, nombre: string) => [`${valor} ton`, nombre]}
+            formatter={(valor, nombre) => [`${valor} ton`, nombre]}
           />
           <Legend
             wrapperStyle={{ fontSize: 12, color: '#52514e' }}

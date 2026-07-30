@@ -4,9 +4,6 @@ import AsignarVehiculo from './AsignarVehiculo';
 import AsignarZona from './AsignarZona';
 import GestionRecojos from './GestionRecojos';
 
-import GestionRutas from './GestionRutas';
-import GestionHorarios from './GestionHorarios';
-
 type OperacionTab = 'turnos' | 'vehiculos' | 'zonas' | 'recojos';
 
 

@@ -22,7 +22,14 @@ interface AuthSocketData {
   rol?: Rol;
 }
 
-@WebSocketGateway({ cors: { origin: '*' } })
+// FRONTEND_URL restringe el CORS del socket al dominio real en produccion
+// (puede llevar varios separados por coma); sin definir, permite cualquier
+// origen para no exigir configuracion extra en desarrollo local.
+const origenesPermitidos = process.env.FRONTEND_URL?.split(',').map((url) =>
+  url.trim(),
+);
+
+@WebSocketGateway({ cors: { origin: origenesPermitidos?.length ? origenesPermitidos : '*' } })
 export class RastreoGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private readonly logger = new Logger('RastreoGateway');

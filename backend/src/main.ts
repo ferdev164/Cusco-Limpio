@@ -22,7 +22,13 @@ async function bootstrap() {
     transform: true,
   }));
 
-  app.enableCors();
+  // En produccion, FRONTEND_URL restringe el CORS al dominio real del frontend
+  // (puede llevar varios separados por coma). Sin definir, permite cualquier
+  // origen, para no exigir configuracion extra en desarrollo local.
+  const frontendUrls = process.env.FRONTEND_URL?.split(',').map((url) =>
+    url.trim(),
+  );
+  app.enableCors({ origin: frontendUrls?.length ? frontendUrls : true });
 
   await app.listen(process.env.PORT ?? 3000);
 }

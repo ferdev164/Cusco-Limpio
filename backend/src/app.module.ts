@@ -23,6 +23,12 @@ import { GuiasModule } from './guias/guias.module';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
+        // Necesario para conectarse a Postgres desde fuera de la red interna
+        // de Render (ej. al correr el seed desde tu propia computadora).
+        ssl:
+          configService.get<string>('DB_SSL') === 'true'
+            ? { rejectUnauthorized: false }
+            : false,
         autoLoadEntities: true,
         synchronize: true,
       }),

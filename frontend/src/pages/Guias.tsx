@@ -110,7 +110,7 @@ export default function Guias() {
             Entérate de las próximas campañas de reciclaje de la municipalidad.
           </p>
           <a
-            href="https://www.facebook.com/"
+            href="https://www.facebook.com/MedioAmbienteMPC"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block rounded-lg bg-[#1877F2] px-5 py-2 text-sm font-semibold text-white hover:bg-[#166fe0]"

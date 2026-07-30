@@ -31,6 +31,8 @@ export default function Register() {
     telefono: '',
   });
   const [ubicacion, setUbicacion] = useState<{ lat: number; lng: number } | null>(null);
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [modalTerminos, setModalTerminos] = useState(false);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
@@ -44,6 +46,11 @@ export default function Register() {
 
     if (!ubicacion) {
       setError('Por favor marca tu ubicación en el mapa');
+      return;
+    }
+
+    if (!aceptaTerminos) {
+      setError('Debes aceptar los términos y condiciones para registrarte');
       return;
     }
 
@@ -161,6 +168,27 @@ export default function Register() {
             )}
           </div>
 
+          <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-3">
+            <input
+              id="aceptar-terminos"
+              type="checkbox"
+              checked={aceptaTerminos}
+              onChange={() => setAceptaTerminos(!aceptaTerminos)}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-green-700 focus:ring-green-500"
+            />
+            <label htmlFor="aceptar-terminos" className="text-sm text-gray-700">
+              Acepto los{' '}
+              <button
+                type="button"
+                onClick={() => setModalTerminos(true)}
+                className="font-medium text-green-700 underline underline-offset-2 hover:text-green-800"
+              >
+                términos y condiciones
+              </button>{' '}
+              y el tratamiento de mis datos personales conforme a la ley.
+            </label>
+          </div>
+
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
           <button
@@ -171,6 +199,57 @@ export default function Register() {
             {cargando ? 'Registrando...' : 'Registrarse'}
           </button>
         </form>
+
+        {modalTerminos && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4">
+            <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Términos y condiciones y tratamiento de datos</h2>
+                  <p className="mt-1 text-sm text-gray-500">Información sobre el uso de tus datos personales.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setModalTerminos(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                  aria-label="Cerrar ventana emergente"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mt-4 max-h-[60vh] overflow-y-auto pr-2 text-sm text-gray-700 space-y-3">
+                <p>
+                  Al registrarte en Cusco Limpio, autorizas el tratamiento de tus datos personales para fines de
+                  identificación, operación del servicio, comunicaciones relacionadas con reportes y notificaciones,
+                  y mejora de la experiencia del usuario.
+                </p>
+                <p>
+                  Tus datos serán almacenados de forma segura y solo serán compartidos con autoridades o terceros
+                  cuando exista una obligación legal o una autorización expresa para ello.
+                </p>
+                <p>
+                  Conforme a la Ley N° 29733, Ley de Protección de Datos Personales, puedes solicitar acceso,
+                  rectificación, cancelación u oposición sobre tus datos, así como revocar tu consentimiento en
+                  cualquier momento, comunicándote con el equipo de Cusco Limpio.
+                </p>
+                <p>
+                  Al marcar esta casilla, confirmas que has leído, comprendido y aceptado estos términos.
+                </p>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setModalTerminos(false)}
+                  className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <p
           onClick={() => navigate('/login')}

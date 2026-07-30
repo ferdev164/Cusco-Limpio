@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import heroBg from '../assets/hero.png';
+import logo from '../assets/logo.png';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -8,15 +9,10 @@ export default function Landing() {
     <div className="min-h-screen bg-gray-50">
       <header className="flex items-center justify-between border-b border-gray-200 bg-white px-8 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1a7a5e] text-sm font-bold text-white">
-            CL
-          </div>
-          <div>
-            <p className="font-bold text-gray-800">Cusco Limpio</p>
-            <p className="text-xs text-gray-500">
-              Sistema de recoleccion de residuos
-            </p>
-          </div>
+          <img src={logo} alt="Cusco Limpio" className="h-12 w-auto" />
+          <p className="text-xs text-gray-500">
+            Sistema de recoleccion de residuos
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -50,9 +46,11 @@ export default function Landing() {
       >
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 mx-auto max-w-2xl py-24 text-center ">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1a7a5e] text-lg font-bold text-white">
-            CL
-          </div>
+          <img
+            src={logo}
+            alt="Cusco Limpio"
+            className="mx-auto mb-6 h-28 w-28 rounded-2xl bg-white/90 object-contain p-2 shadow-lg"
+          />
           <h1 className="mb-4 text-4xl font-bold text-white">
             Gestion inteligente de residuos en Cusco
           </h1>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { operacionesApi } from '../services/operaciones.service';
 import type { ProgramacionConductor } from '../services/operaciones.service';
+import { useTransmitirPosicion } from '../features/monitoreo-gps/logica/useTransmitirPosicion';
 
 function formatHora(hora?: string | null) {
   return hora ? hora.slice(0, 5) : '--:--';
@@ -64,6 +65,10 @@ export default function ConductorDashboard() {
       enCurso: turnos.filter((t) => t.recojoActivo).length,
     }),
     [turnos],
+  );
+
+  const { estado: estadoGps, error: errorGps } = useTransmitirPosicion(
+    resumen.enCurso > 0,
   );
 
   function handleCerrarSesion() {
@@ -130,6 +135,22 @@ export default function ConductorDashboard() {
             <p className="text-sm text-slate-500">Recojos en curso</p>
           </div>
         </div>
+
+        {resumen.enCurso > 0 && (
+          <p
+            className={`mb-4 rounded-lg px-4 py-3 text-sm ${
+              estadoGps === 'error'
+                ? 'bg-red-50 text-red-700'
+                : 'bg-emerald-50 text-emerald-700'
+            }`}
+          >
+            {estadoGps === 'transmitiendo' &&
+              'Transmitiendo tu ubicacion GPS en tiempo real.'}
+            {estadoGps === 'error' &&
+              `No se pudo transmitir tu ubicacion: ${errorGps}`}
+            {estadoGps === 'inactivo' && 'Activando GPS...'}
+          </p>
+        )}
 
         {mensaje && (
           <p className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">

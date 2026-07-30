@@ -17,4 +17,9 @@ export class CrearProgramacionDto {
   @Max(2147483647, { each: true })
   @Type(() => Number)
   ayudanteIds?: number[];
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  vehiculoId?: number;
 }

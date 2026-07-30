@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { OperacionesModule } from './operaciones/operaciones.module';
 import { RastreoModule } from './rastreo/rastreo.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { GuiasModule } from './guias/guias.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
     OperacionesModule,
     RastreoModule,
     NotificacionesModule, // registrado globalmente
+    GuiasModule,
   ],
 })
 export class AppModule {}

@@ -10,6 +10,7 @@ import { CrearProgramacionDto } from '../dto/crear-programacion.dto';
 import { Ayudante } from '../entities/ayudante.entity';
 import { Horario } from '../entities/horario.entity';
 import { Programacion } from '../entities/programacion.entity';
+import { EstadoVehiculo, Vehiculo } from '../entities/vehiculo.entity';
 
 @Injectable()
 export class ProgramacionesService {
@@ -19,6 +20,7 @@ export class ProgramacionesService {
     @InjectRepository(Horario) private horariosRepo: Repository<Horario>,
     @InjectRepository(Conductor) private conductoresRepo: Repository<Conductor>,
     @InjectRepository(Ayudante) private ayudantesRepo: Repository<Ayudante>,
+    @InjectRepository(Vehiculo) private vehiculosRepo: Repository<Vehiculo>,
   ) {}
 
   async findAll(zonaId?: number) {
@@ -63,12 +65,33 @@ export class ProgramacionesService {
       throw new ConflictException('Ayudante no disponible');
     }
 
+    let vehiculo: Vehiculo | null = null;
+    if (dto.vehiculoId) {
+      vehiculo = await this.vehiculosRepo.findOne({
+        where: { id: dto.vehiculoId },
+      });
+      if (!vehiculo) {
+        throw new NotFoundException('Vehiculo no encontrado');
+      }
+      if (vehiculo.estado !== EstadoVehiculo.DISPONIBLE) {
+        throw new ConflictException('Vehiculo no disponible');
+      }
+    }
+
     const programacion = this.programacionesRepo.create({
       horario,
       conductor,
       ayudantes,
+      vehiculo: vehiculo ?? undefined,
     });
     const guardada = await this.programacionesRepo.save(programacion);
+
+    if (vehiculo) {
+      vehiculo.estado = EstadoVehiculo.EN_RUTA;
+      vehiculo.conductor = conductor;
+      vehiculo.zona = horario.zona;
+      await this.vehiculosRepo.save(vehiculo);
+    }
 
     return { id: guardada.id };
   }

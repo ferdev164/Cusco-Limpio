@@ -14,6 +14,8 @@ import type { RolUsuario } from './services/auth.service';
 import PantallaGps from './features/monitoreo-gps/PantallaGps';
 import ActivarNotificaciones from './pages/ActivarNotificaciones';
 import Reportes from './pages/Reportes';
+import Guias from './pages/Guias';
+import GestionGuias from './pages/GestionGuias';
 
 const destinosPorRol: Record<RolUsuario, string> = {
   administrador: '/admin/dashboard',
@@ -48,6 +50,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/ciudadano" element={<HorariosPublicos />} />
+          <Route path="/guias" element={<Guias />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/register" element={<Register />} />
@@ -74,6 +77,7 @@ function App() {
             <Route path="operaciones" element={<AdminOperaciones />} />
             <Route path="monitoreo" element={<PantallaGps />} />
             <Route path="reportes" element={<Reportes />} />
+            <Route path="guias" element={<GestionGuias />} />
             <Route path="zonas" element={<Navigate to="/admin/operaciones" replace />} />
             <Route path="horarios" element={<Navigate to="/admin/operaciones" replace />} />
             <Route path="vehiculos" element={<Navigate to="/admin/operaciones" replace />} />

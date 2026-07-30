@@ -1,12 +1,11 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { login } from '../services/auth.service';
 
-// Solo cambia el titulo/subtitulo y el texto del boton. El backend identifica
-// el rol real (administrador o conductor) por el correo y redirige segun RBAC.
-type VistaLogin = 'ciudadano' | 'administrador';
-
+// El backend identifica el rol real (ciudadano, administrador o conductor)
+// por el correo y redirige segun RBAC; no hay seleccion de rol en el cliente.
 const destinosPorRol: Record<string, string> = {
   administrador: '/admin/dashboard',
   ciudadano: '/ciudadano/dashboard',
@@ -14,7 +13,6 @@ const destinosPorRol: Record<string, string> = {
 };
 
 export default function Login() {
-  const [rol, setRol] = useState<VistaLogin>('ciudadano');
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState('');
@@ -32,7 +30,13 @@ export default function Login() {
       guardarSesion(res.access_token, res.usuario);
       navigate(destinosPorRol[res.usuario.rol] || '/');
     } catch (err: unknown) {
-      setError('Correo o contrasena incorrectos');
+      if (axios.isAxiosError(err) && err.response) {
+        setError('Correo o contrasena incorrectos');
+      } else {
+        setError(
+          'No se pudo conectar con el servidor. Si estas probando en HTTPS local, entra directo a la URL del backend (puerto 3000) y acepta el certificado ahi tambien.',
+        );
+      }
     } finally {
       setCargando(false);
     }
@@ -40,8 +44,34 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-10 shadow-md">
-        <div className="mb-6 flex flex-col items-center">
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-10 shadow-md">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          aria-label="Volver al inicio"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="mb-6 flex w-full flex-col items-center"
+        >
           <div className="mb-3 rounded-2xl bg-green-700 p-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -59,35 +89,8 @@ export default function Login() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Cusco Limpio</h1>
-          <p className="text-sm text-green-600">
-            {rol === 'administrador' ? 'Panel municipal' : 'Acceso ciudadano'}
-          </p>
-        </div>
-
-        <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl bg-gray-100 p-1">
-          <button
-            type="button"
-            onClick={() => setRol('ciudadano')}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-              rol === 'ciudadano'
-                ? 'bg-white text-green-700 shadow-sm'
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            Ciudadano
-          </button>
-          <button
-            type="button"
-            onClick={() => setRol('administrador')}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-              rol === 'administrador'
-                ? 'bg-white text-green-700 shadow-sm'
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            Administrador
-          </button>
-        </div>
+          <p className="text-sm text-green-600">Inicia sesion para continuar</p>
+        </button>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -123,7 +126,7 @@ export default function Login() {
             disabled={cargando}
             className="w-full rounded-lg bg-green-700 py-2 font-semibold text-white transition hover:bg-green-800 disabled:opacity-50"
           >
-            {cargando ? 'Ingresando...' : `Ingresar como ${rol}`}
+            {cargando ? 'Ingresando...' : 'Iniciar sesion'}
           </button>
         </form>
 

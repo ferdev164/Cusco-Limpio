@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
+import { API_ORIGIN } from '../config';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -48,7 +49,7 @@ export default function Register() {
 
     setCargando(true);
     try {
-      await axios.post('http://localhost:3000/auth/register', {
+      await axios.post(`${API_ORIGIN}/auth/register`, {
         ...form,
         rol: 'ciudadano',
         latitud: ubicacion.lat,

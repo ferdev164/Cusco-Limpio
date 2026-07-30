@@ -26,6 +26,12 @@ export default function Landing() {
             Ver horarios
           </button>
           <button
+            onClick={() => navigate('/guias')}
+            className="rounded-lg border border-[#1a7a5e] px-4 py-2 text-sm font-medium text-[#1a7a5e] transition-colors hover:bg-green-50"
+          >
+            Guias de reciclaje
+          </button>
+          <button
             onClick={() => navigate('/login')}
             className="rounded-lg bg-[#1a7a5e] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#155f49]"
           >
@@ -60,6 +66,12 @@ export default function Landing() {
               className="rounded-lg bg-[#1a7a5e] px-6 py-3 font-medium text-white transition-colors hover:bg-[#155f49]"
             >
               Ver horarios de recoleccion
+            </button>
+            <button
+              onClick={() => navigate('/guias')}
+              className="rounded-lg border border-white px-6 py-3 font-medium text-white transition-colors hover:bg-white/10"
+            >
+              Guias de reciclaje
             </button>
             <button
               onClick={() => navigate('/login')}

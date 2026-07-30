@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { operacionesApi } from '../services/operaciones.service';
 import type {
   ConductorCuenta,
+  ConductorInput,
   Horario,
   HorarioAdmin,
   HorarioInput,
@@ -72,6 +73,7 @@ export default function AsignarHorario() {
   const [ayudanteIds, setAyudanteIds] = useState<number[]>([]);
   const [programaciones, setProgramaciones] = useState<Programacion[]>([]);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
+  const [vehiculoId, setVehiculoId] = useState<number | null>(null);
   const [tab, setTab] = useState<'crear' | 'ver' | 'gestionar' | 'cuentas'>('crear');
   const [mensaje, setMensaje] = useState('');
   const [guardando, setGuardando] = useState(false);
@@ -85,6 +87,20 @@ export default function AsignarHorario() {
     telefono: '',
   });
   const [guardandoCuenta, setGuardandoCuenta] = useState(false);
+
+  // CRUD de conductores
+  const [modalConductorCrud, setModalConductorCrud] = useState(false);
+  const [editandoConductorId, setEditandoConductorId] = useState<number | null>(
+    null,
+  );
+  const [formConductorCrud, setFormConductorCrud] = useState<ConductorInput>({
+    nombre: '',
+    licencia: '',
+    turno: '',
+  });
+  const [guardandoConductorCrud, setGuardandoConductorCrud] = useState(false);
+  const [confirmarConductor, setConfirmarConductor] =
+    useState<ConductorCuenta | null>(null);
 
   // CRUD de horarios (HU-11)
   const [todosHorarios, setTodosHorarios] = useState<HorarioAdmin[]>([]);
@@ -198,6 +214,11 @@ export default function AsignarHorario() {
     return mapa;
   }, [conductores, horarioSeleccionado, programaciones]);
 
+  const vehiculosDisponibles = useMemo(
+    () => vehiculos.filter((vehiculo) => vehiculo.estado === 'disponible'),
+    [vehiculos],
+  );
+
   const resumen = useMemo(
     () => [
       { label: 'Programaciones', value: programaciones.length },
@@ -242,11 +263,14 @@ export default function AsignarHorario() {
         horarioId,
         conductorId,
         ayudanteIds,
+        vehiculoId: vehiculoId ?? undefined,
       });
       setProgramaciones(await operacionesApi.programaciones());
+      setVehiculos(await operacionesApi.vehiculos());
       setConductorId(null);
       setAyudanteIds([]);
       setHorarioId(null);
+      setVehiculoId(null);
       setMensaje('Turno agregado correctamente.');
     } catch (err) {
       setMensaje(err instanceof Error ? err.message : 'No se pudo guardar');
@@ -333,6 +357,61 @@ export default function AsignarHorario() {
     }
   }
 
+  // ── CRUD de conductores ──
+  function abrirCrearConductor() {
+    setEditandoConductorId(null);
+    setFormConductorCrud({ nombre: '', licencia: '', turno: '' });
+    setModalConductorCrud(true);
+  }
+
+  function abrirEditarConductor(c: ConductorCuenta) {
+    setEditandoConductorId(c.id);
+    setFormConductorCrud({
+      nombre: c.nombre,
+      licencia: c.licencia ?? '',
+      turno: '',
+      disponible: c.disponible,
+    });
+    setModalConductorCrud(true);
+  }
+
+  async function guardarConductorCrud() {
+    setGuardandoConductorCrud(true);
+    setMensaje('');
+    try {
+      if (editandoConductorId) {
+        await operacionesApi.actualizarConductor(
+          editandoConductorId,
+          formConductorCrud,
+        );
+        setMensaje('Conductor actualizado correctamente.');
+      } else {
+        await operacionesApi.crearConductor(formConductorCrud);
+        setMensaje('Conductor creado correctamente.');
+      }
+      setModalConductorCrud(false);
+      await cargarCuentas();
+    } catch (err) {
+      setMensaje(err instanceof Error ? err.message : 'No se pudo guardar');
+    } finally {
+      setGuardandoConductorCrud(false);
+    }
+  }
+
+  async function eliminarConductorCrud() {
+    if (!confirmarConductor) return;
+    setMensaje('');
+    try {
+      await operacionesApi.eliminarConductor(confirmarConductor.id);
+      setMensaje('Conductor eliminado correctamente.');
+      setConfirmarConductor(null);
+      await cargarCuentas();
+    } catch (err) {
+      setMensaje(err instanceof Error ? err.message : 'No se pudo eliminar');
+      setConfirmarConductor(null);
+    }
+  }
+
   async function eliminarHorario() {
     if (!confirmarHorario) return;
     setMensaje('');
@@ -363,7 +442,14 @@ export default function AsignarHorario() {
           >
             + Nuevo horario
           </button>
-        ) : tab === 'cuentas' ? null : (
+        ) : tab === 'cuentas' ? (
+          <button
+            onClick={abrirCrearConductor}
+            className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+          >
+            + Agregar conductor
+          </button>
+        ) : (
           <button
             onClick={guardarTurno}
             disabled={tab !== 'crear' || guardando}
@@ -504,6 +590,40 @@ export default function AsignarHorario() {
                 ))}
               </div>
             </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white p-5">
+              <h3 className="mb-3 text-sm font-semibold">Vehiculo</h3>
+              <div className="space-y-2">
+                {vehiculosDisponibles.map((vehiculo) => (
+                  <button
+                    key={vehiculo.id}
+                    onClick={() =>
+                      setVehiculoId((actual) =>
+                        actual === vehiculo.id ? null : vehiculo.id,
+                      )
+                    }
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm ${
+                      vehiculoId === vehiculo.id
+                        ? 'bg-emerald-50 text-emerald-900'
+                        : 'bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    <span>
+                      {vehiculo.placa}{' '}
+                      <span className="text-xs text-slate-400">
+                        ({vehiculo.tipo})
+                      </span>
+                    </span>
+                    <span>{vehiculo.capacidad || ''}</span>
+                  </button>
+                ))}
+                {vehiculosDisponibles.length === 0 && (
+                  <p className="text-sm text-slate-400">
+                    No hay vehiculos disponibles ahora mismo.
+                  </p>
+                )}
+              </div>
+            </div>
           </section>
         </div>
       )}
@@ -598,9 +718,9 @@ export default function AsignarHorario() {
         <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
           <div className="border-b border-slate-100 px-4 py-3">
             <p className="text-sm text-slate-500">
-              Crea el correo y la contrasena de acceso para un conductor ya
-              registrado. No se crean conductores nuevos aqui, solo se les da
-              una cuenta para iniciar sesion.
+              Administra los perfiles de conductor (crear, editar, eliminar) y
+              crea el correo y la contrasena de acceso para que puedan iniciar
+              sesion.
             </p>
           </div>
           <table className="w-full text-sm">
@@ -634,11 +754,23 @@ export default function AsignarHorario() {
                     {!conductor.tieneCuenta && (
                       <button
                         onClick={() => abrirCrearCuenta(conductor)}
-                        className="rounded-md border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+                        className="mr-2 rounded-md border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
                       >
                         Crear cuenta
                       </button>
                     )}
+                    <button
+                      onClick={() => abrirEditarConductor(conductor)}
+                      className="mr-2 rounded-md border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => setConfirmarConductor(conductor)}
+                      className="rounded-md border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                    >
+                      Eliminar
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -716,6 +848,110 @@ export default function AsignarHorario() {
                 className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50"
               >
                 {guardandoCuenta ? 'Creando...' : 'Crear cuenta'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL crear/editar conductor ── */}
+      {modalConductorCrud && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="mb-4 text-lg font-bold">
+              {editandoConductorId ? 'Editar conductor' : 'Nuevo conductor'}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-sm text-slate-600">
+                  Nombre
+                </label>
+                <input
+                  value={formConductorCrud.nombre}
+                  onChange={(e) =>
+                    setFormConductorCrud({
+                      ...formConductorCrud,
+                      nombre: e.target.value,
+                    })
+                  }
+                  placeholder="Nombre completo"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-slate-600">
+                  Licencia
+                </label>
+                <input
+                  value={formConductorCrud.licencia}
+                  onChange={(e) =>
+                    setFormConductorCrud({
+                      ...formConductorCrud,
+                      licencia: e.target.value,
+                    })
+                  }
+                  placeholder="A-II-B-005"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              {editandoConductorId && (
+                <label className="flex items-center gap-2 text-sm text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={formConductorCrud.disponible ?? true}
+                    onChange={(e) =>
+                      setFormConductorCrud({
+                        ...formConductorCrud,
+                        disponible: e.target.checked,
+                      })
+                    }
+                    className="accent-emerald-700"
+                  />
+                  Disponible
+                </label>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setModalConductorCrud(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={guardarConductorCrud}
+                disabled={guardandoConductorCrud || !formConductorCrud.nombre}
+                className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50"
+              >
+                {guardandoConductorCrud ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL confirmar borrado de conductor ── */}
+      {confirmarConductor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-bold">¿Eliminar conductor?</h3>
+            <p className="mb-6 text-sm text-slate-500">
+              Estás por eliminar a{' '}
+              <span className="font-semibold">{confirmarConductor.nombre}</span>.
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmarConductor(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={eliminarConductorCrud}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Sí, eliminar
               </button>
             </div>
           </div>

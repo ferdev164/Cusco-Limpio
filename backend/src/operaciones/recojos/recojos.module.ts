@@ -10,5 +10,6 @@ import { RecojosService } from './recojos.service';
   imports: [TypeOrmModule.forFeature([Recojo, Programacion, Conductor])],
   controllers: [RecojosController],
   providers: [RecojosService],
+  exports: [RecojosService],
 })
 export class RecojosModule {}

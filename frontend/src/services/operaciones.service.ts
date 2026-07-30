@@ -1,4 +1,6 @@
-const API_BASE = 'http://localhost:3000/api';
+import { API_ORIGIN } from '../config';
+
+const API_BASE = `${API_ORIGIN}/api`;
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem('token');
@@ -48,6 +50,13 @@ export type ConductorCuenta = {
   licencia: string | null;
   correo: string | null;
   tieneCuenta: boolean;
+};
+
+export type ConductorInput = {
+  nombre: string;
+  licencia?: string;
+  turno?: string;
+  disponible?: boolean;
 };
 
 export type CrearCuentaConductorInput = {
@@ -175,6 +184,7 @@ export const operacionesApi = {
     horarioId: number;
     conductorId: number;
     ayudanteIds: number[];
+    vehiculoId?: number;
   }) =>
     request<{ id: number }>('/programaciones', {
       method: 'POST',
@@ -220,6 +230,20 @@ export const operacionesApi = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  // CRUD de conductores
+  crearConductor: (data: ConductorInput) =>
+    request<{ id: number }>('/conductores', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  actualizarConductor: (id: number, data: Partial<ConductorInput>) =>
+    request<{ id: number }>(`/conductores/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  eliminarConductor: (id: number) =>
+    request<{ mensaje: string }>(`/conductores/${id}`, { method: 'DELETE' }),
 
   // Recojos (HU-07)
   misProgramaciones: () =>

@@ -4,11 +4,14 @@ import { Conductor } from '../../usuarios/entities/conductor.entity';
 import { Ayudante } from '../entities/ayudante.entity';
 import { Horario } from '../entities/horario.entity';
 import { Programacion } from '../entities/programacion.entity';
+import { Vehiculo } from '../entities/vehiculo.entity';
 import { ProgramacionesController } from './programaciones.controller';
 import { ProgramacionesService } from './programaciones.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Programacion, Horario, Conductor, Ayudante])],
+  imports: [
+    TypeOrmModule.forFeature([Programacion, Horario, Conductor, Ayudante, Vehiculo]),
+  ],
   controllers: [ProgramacionesController],
   providers: [ProgramacionesService],
 })

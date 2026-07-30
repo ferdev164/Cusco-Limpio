@@ -117,6 +117,19 @@ export class RecojosService {
     return { id: recojo.id, tiempoTranscurridoMin };
   }
 
+  async obtenerVehiculoActivo(
+    usuarioId: number,
+  ): Promise<{ recojoId: number; vehiculoId: number } | null> {
+    const recojo = await this.recojosRepo.findOne({
+      where: {
+        estado: EstadoRecojo.EN_CURSO,
+        programacion: { conductor: { usuario: { id: usuarioId } } },
+      },
+    });
+    if (!recojo?.programacion.vehiculo) return null;
+    return { recojoId: recojo.id, vehiculoId: recojo.programacion.vehiculo.id };
+  }
+
   async listar() {
     const recojos = await this.recojosRepo.find({ order: { id: 'DESC' } });
 

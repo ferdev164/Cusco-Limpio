@@ -89,8 +89,6 @@ export default function Dashboard() {
     );
   }, [casa, camiones]);
 
-  const yaRecibioAvisos = avisos.some((a) => a.estado === 'enviada');
-
   function handleCerrarSesion() {
     cerrarSesion();
     navigate('/login');
@@ -182,29 +180,6 @@ export default function Dashboard() {
                   </p>
                 )}
               </div>
-            </section>
-
-            <section className="rounded-lg border border-gray-200 bg-white p-5">
-              <h2 className="mb-2 font-semibold text-gray-900">
-                Notificaciones WhatsApp
-              </h2>
-              {yaRecibioAvisos ? (
-                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  Activas: ya recibiste avisos antes.
-                </p>
-              ) : (
-                <div className="rounded-lg bg-amber-50 px-3 py-3 text-sm text-amber-800">
-                  <p className="mb-2">
-                    Aun no confirmamos que las tengas activas.
-                  </p>
-                  <button
-                    onClick={() => navigate('/activar-notificaciones')}
-                    className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
-                  >
-                    Activar ahora
-                  </button>
-                </div>
-              )}
             </section>
 
             <section className="rounded-lg border border-gray-200 bg-white p-5">

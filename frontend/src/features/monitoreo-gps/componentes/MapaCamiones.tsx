@@ -14,6 +14,13 @@ const iconoCamion = L.divIcon({
   iconAnchor: [13, 13],
 });
 
+const iconoCasa = L.divIcon({
+  className: '',
+  html: `<div style="font-size:24px;line-height:24px">🏠</div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
 // Recentra el mapa suavemente cuando el camión se mueve
 function Recentrar({ posicion }: { posicion: [number, number] | null }) {
   const map = useMap();
@@ -23,11 +30,19 @@ function Recentrar({ posicion }: { posicion: [number, number] | null }) {
   return null;
 }
 
-export default function MapaCamiones({ camiones }: { camiones: PosicionCamion[] }) {
+export default function MapaCamiones({
+  camiones,
+  casa,
+}: {
+  camiones: PosicionCamion[];
+  casa?: { lat: number; lng: number } | null;
+}) {
   const primero = camiones[0];
   const centro: [number, number] = primero
     ? [primero.lat, primero.lng]
-    : [-13.5319, -71.9675]; // Plaza de Armas por defecto
+    : casa
+      ? [casa.lat, casa.lng]
+      : [-13.5319, -71.9675]; // Plaza de Armas por defecto
 
   return (
     <MapContainer center={centro} zoom={15} style={{ height: '100%', width: '100%' }}>
@@ -35,6 +50,11 @@ export default function MapaCamiones({ camiones }: { camiones: PosicionCamion[] 
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="&copy; OpenStreetMap"
       />
+      {casa && (
+        <Marker position={[casa.lat, casa.lng]} icon={iconoCasa}>
+          <Popup>Tu vivienda</Popup>
+        </Marker>
+      )}
       {camiones.map((c) => (
         <Marker key={c.camionId} position={[c.lat, c.lng]} icon={iconoCamion}>
           <Popup>Camión #{c.camionId}</Popup>

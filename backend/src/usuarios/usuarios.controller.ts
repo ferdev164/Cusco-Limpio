@@ -12,7 +12,8 @@ import { CrearCuentaConductorDto } from './dto/crear-cuenta-conductor.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Rol } from './entities/usuario.entity';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { Rol, Usuario } from './entities/usuario.entity';
 
 @Controller('api/usuarios')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -23,6 +24,12 @@ export class UsuariosController {
   @Get('conductores')
   listarConductores() {
     return this.usuariosService.listarConductores();
+  }
+
+  @Get('ciudadano/me')
+  @Roles(Rol.CIUDADANO)
+  miPerfilCiudadano(@GetUser() usuario: Usuario) {
+    return this.usuariosService.obtenerMiPerfilCiudadano(usuario.id);
   }
 
   @Post('conductores/:id/cuenta')

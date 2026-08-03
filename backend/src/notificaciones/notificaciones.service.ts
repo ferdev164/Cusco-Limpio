@@ -1,10 +1,11 @@
 // Registra en BD y encola el aviso
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Ciudadano } from '../usuarios/entities/ciudadano.entity';
 import { Notificacion, EstadoNotificacion } from './entities/notificacion.entity';
 
 export interface AvisoProximidad {
@@ -20,7 +21,30 @@ export class NotificacionesService {
   constructor(
     @InjectQueue('notificaciones') private readonly cola: Queue,
     @InjectRepository(Notificacion) private readonly repo: Repository<Notificacion>,
+    @InjectRepository(Ciudadano) private readonly ciudadanoRepo: Repository<Ciudadano>,
   ) {}
+
+  async misAvisos(usuarioId: number) {
+    const ciudadano = await this.ciudadanoRepo.findOne({
+      where: { usuario: { id: usuarioId } },
+    });
+    if (!ciudadano) throw new NotFoundException('Perfil de ciudadano no encontrado');
+
+    const avisos = await this.repo.find({
+      where: { ciudadanoId: ciudadano.id },
+      order: { fechaCreacion: 'DESC' },
+      take: 10,
+    });
+
+    return avisos.map((a) => ({
+      id: a.id,
+      mensaje: a.mensaje,
+      estado: a.estado,
+      distanciaMetros: a.distanciaMetros,
+      fechaCreacion: a.fechaCreacion,
+      fechaEnvio: a.fechaEnvio,
+    }));
+  }
 
   async encolarAviso(data: AvisoProximidad) {
     const mensaje =

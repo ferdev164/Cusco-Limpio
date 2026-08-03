@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Ciudadano } from './entities/ciudadano.entity';
 import { Conductor } from './entities/conductor.entity';
 import { Rol, Usuario } from './entities/usuario.entity';
 import { CrearCuentaConductorDto } from './dto/crear-cuenta-conductor.dto';
@@ -13,7 +14,25 @@ export class UsuariosService {
     private usuarioRepo: Repository<Usuario>,
     @InjectRepository(Conductor)
     private conductorRepo: Repository<Conductor>,
+    @InjectRepository(Ciudadano)
+    private ciudadanoRepo: Repository<Ciudadano>,
   ) {}
+
+  async obtenerMiPerfilCiudadano(usuarioId: number) {
+    const ciudadano = await this.ciudadanoRepo.findOne({
+      where: { usuario: { id: usuarioId } },
+    });
+    if (!ciudadano) {
+      throw new NotFoundException('Perfil de ciudadano no encontrado');
+    }
+    return {
+      nombre: ciudadano.usuario.nombre,
+      correo: ciudadano.usuario.correo,
+      telefono: ciudadano.usuario.telefono,
+      latitud: ciudadano.latitud,
+      longitud: ciudadano.longitud,
+    };
+  }
 
   async listarConductores() {
     const conductores = await this.conductorRepo.find({

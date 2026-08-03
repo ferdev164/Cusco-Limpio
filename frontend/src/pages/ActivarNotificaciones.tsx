@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import whatsappQr from '../assets/whatsapp-qr.png';
 
 export default function ActivarNotificaciones() {
   const navigate = useNavigate();
@@ -49,6 +50,18 @@ export default function ActivarNotificaciones() {
               </a>
             </p>
           </div>
+        </div>
+
+        {/* QR: util si esta pantalla se ve desde una computadora */}
+        <div className="mb-6 flex flex-col items-center">
+          <p className="mb-2 text-xs text-gray-400">
+            O escanea este código desde tu celular
+          </p>
+          <img
+            src={whatsappQr}
+            alt="Código QR para abrir WhatsApp"
+            className="h-32 w-32 rounded-lg border border-gray-200 p-1"
+          />
         </div>
 
         <p className="text-xs text-gray-400 mb-6">

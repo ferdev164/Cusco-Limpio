@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import TarjetaGuia from '../components/TarjetaGuia';
 import { guiasApi } from '../services/guias.service';
 import type { CategoriaGuia, Guia, GuiaInput } from '../services/guias.service';
 
@@ -151,6 +152,19 @@ export default function GestionGuias() {
           </tbody>
         </table>
       </div>
+
+      {guias.length > 0 && (
+        <div className="mt-8">
+          <h3 className="mb-3 text-sm font-semibold text-slate-700">
+            Vista previa (asi las ve el ciudadano en /guias)
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {guias.map((g) => (
+              <TarjetaGuia key={g.id} guia={g} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {modalAbierto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">

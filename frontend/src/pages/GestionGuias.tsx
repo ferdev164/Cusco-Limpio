@@ -156,7 +156,7 @@ export default function GestionGuias() {
       {guias.length > 0 && (
         <div className="mt-8">
           <h3 className="mb-3 text-sm font-semibold text-slate-700">
-            Vista previa (asi las ve el ciudadano en /guias)
+            Vista previa(ciudadano)
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {guias.map((g) => (
